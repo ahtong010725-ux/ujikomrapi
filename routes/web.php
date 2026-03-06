@@ -80,7 +80,7 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/chat/fetch/{id}', [LostController::class, 'fetchMessages']);
     Route::post('/chat/{user}', [LostController::class, 'sendMessage']);
-    Route::get('/chat/{user}', [LostController::class, 'chat']);
+    Route::get('/chat/{user}', [LostController::class, 'chat'])->name('chat');
 });
 
 Route::get('/inbox/fetch', [LostController::class, 'fetchInbox']);

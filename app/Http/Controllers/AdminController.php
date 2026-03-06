@@ -31,14 +31,20 @@ class AdminController extends Controller
     public function approveUser($id)
     {
         $user = User::findOrFail($id);
-        $user->update(['registration_status' => 'approved']);
+        $user->update([
+            'registration_status' => 'approved',
+            'rejection_reason' => null
+        ]);
         return back()->with('success', 'User berhasil disetujui.');
     }
 
-    public function rejectUser($id)
+    public function rejectUser(Request $request, $id)
     {
         $user = User::findOrFail($id);
-        $user->update(['registration_status' => 'rejected']);
+        $user->update([
+            'registration_status' => 'rejected',
+            'rejection_reason' => $request->rejection_reason ?? 'Tidak memenuhi syarat.'
+        ]);
         return back()->with('success', 'User ditolak.');
     }
 

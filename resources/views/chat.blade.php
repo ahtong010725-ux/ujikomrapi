@@ -20,27 +20,36 @@
     <!-- SIDEBAR -->
     <div class="chat-sidebar">
         <div class="sidebar-header">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:8px;">
-                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"></path>
-            </svg>
+            <a href="/inbox" class="back-to-inbox">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5"></path>
+                    <path d="M12 19l-7-7 7-7"></path>
+                </svg>
+            </a>
             Conversations
         </div>
 
         @foreach($users as $user)
             <a href="/chat/{{ $user->id }}" class="chat-user {{ $user->id == $receiver->id ? 'active-user' : '' }}">
-                <div class="chat-user-avatar">A</div>
+                <div class="chat-user-avatar">
+                    @if($user->photo)
+                        <img src="{{ asset('storage/' . $user->photo) }}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                    @else
+                        {{ strtoupper(substr($user->name, 0, 1)) }}
+                    @endif
+                </div>
                 <div class="chat-user-info">
                     <strong>
                         {{ $user->name }}
                         @if($user->role === 'admin')
-                            <span style="background: #007bff; color: white; padding: 2px 6px; border-radius: 8px; font-size: 10px; margin-left: 5px;">Admin</span>
+                            <span class="badge-admin">Admin</span>
                         @endif
                     </strong>
                     <small>
-                        @if($user->is_online)
+                        @if($user->is_online && $user->last_seen && \Carbon\Carbon::parse($user->last_seen)->diffInMinutes(now()) < 5)
                             <span class="online-dot"></span> Online
                         @elseif($user->last_seen)
-                            Last seen {{ \Carbon\Carbon::parse($user->last_seen)->format('d M H:i') }}
+                            Last seen {{ \Carbon\Carbon::parse($user->last_seen)->diffForHumans() }}
                         @else
                             Offline
                         @endif
@@ -55,19 +64,31 @@
 
         <div class="chat-header">
             <div class="chat-header-info">
-                <div class="chat-header-avatar">A</div>
+                <a href="/inbox" class="back-btn-mobile">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5"></path>
+                        <path d="M12 19l-7-7 7-7"></path>
+                    </svg>
+                </a>
+                <div class="chat-header-avatar">
+                    @if($receiver->photo)
+                        <img src="{{ asset('storage/' . $receiver->photo) }}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                    @else
+                        {{ strtoupper(substr($receiver->name, 0, 1)) }}
+                    @endif
+                </div>
                 <div>
                     <strong>
                         {{ $receiver->name }}
                         @if($receiver->role === 'admin')
-                            <span style="background: #007bff; color: white; padding: 2px 6px; border-radius: 8px; font-size: 10px; margin-left: 5px;">Admin</span>
+                            <span class="badge-admin">Admin</span>
                         @endif
                     </strong>
                     <span class="chat-status">
-                        @if($receiver->is_online)
+                        @if($receiver->is_online && $receiver->last_seen && \Carbon\Carbon::parse($receiver->last_seen)->diffInMinutes(now()) < 5)
                             <span class="online-dot"></span> Online
                         @elseif($receiver->last_seen)
-                            Last seen {{ \Carbon\Carbon::parse($receiver->last_seen)->format('d M H:i') }}
+                            Last seen {{ \Carbon\Carbon::parse($receiver->last_seen)->diffForHumans() }}
                         @else
                             Offline
                         @endif
@@ -77,33 +98,26 @@
         </div>
 
         <div class="chat-box" id="chatBox">
-            @foreach($messages as $msg)
-                @if($msg->sender_id == auth()->id())
-                    <div class="chat-message sent">
-                        <div class="msg-text">{{ $msg->message }}</div>
-                        <span class="time">
-                            {{ $msg->created_at->format('H:i') }}
-                            @if($msg->is_read)
-                                <span style="color:#34b7f1;">✔✔</span>
-                            @else
-                                ✔
-                            @endif
-                        </span>
-                    </div>
-                @else
-                    <div class="chat-message received">
-                        <div class="msg-text">{{ $msg->message }}</div>
-                        <span class="time">
-                            {{ $msg->created_at->format('H:i') }}
-                        </span>
-                    </div>
-                @endif
-            @endforeach
+            @include('partials.chat-messages', ['messages' => $messages])
+        </div>
+
+        <!-- Image Preview -->
+        <div id="imagePreview" class="image-preview-bar" style="display:none;">
+            <img id="previewImg" src="" alt="Preview">
+            <button type="button" onclick="cancelImage()" class="cancel-preview">&times;</button>
         </div>
 
         <div class="chat-input-area">
             <form id="chatForm">
                 @csrf
+                <label for="imageInput" class="attach-btn" title="Send Photo">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+                </label>
+                <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="previewImage(event)">
                 <input type="text" name="message" id="messageInput" placeholder="Type a message..." autocomplete="off">
                 <button type="submit">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -118,6 +132,11 @@
 </div>
 </div>
 
+<!-- Image Modal -->
+<div id="imageModal" class="image-modal" onclick="closeImageModal()">
+    <img id="modalImage" src="" alt="">
+</div>
+
 <script>
 window.receiverId = {{ $receiver->id }};
 window.csrfToken = "{{ csrf_token() }}";
@@ -125,6 +144,7 @@ window.csrfToken = "{{ csrf_token() }}";
 
 <script src="{{ asset('js/chat.js') }}"></script>
 <script src="{{ asset('js/home.js') }}"></script>
+<script src="{{ asset('js/theme.js') }}"></script>
 
 </body>
 </html>

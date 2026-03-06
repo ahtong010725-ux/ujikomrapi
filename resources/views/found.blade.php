@@ -142,5 +142,6 @@
 
 <script src="{{ asset('js/lost.js') }}"></script>
 <script src="{{ asset('js/home.js') }}"></script>
+<script src="{{ asset('js/theme.js') }}"></script>
 </body>
 </html>

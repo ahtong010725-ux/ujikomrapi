@@ -25,41 +25,37 @@ class RegisteredUserController extends Controller
 
     /**
      * Handle an incoming registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
      */
-public function store(Request $request): RedirectResponse
-{
-    $request->validate([
-        'nisn' => ['required', 'unique:users'],
-        'name' => ['required'],
-        'kelas' => ['required'],
-        'phone' => ['required'],
-        'tanggal_lahir' => ['required'],
-        'jenis_kelamin' => ['required'],
-        'photo' => ['required','image'],
-        'password' => ['required','confirmed'],
-    ]);
+    public function store(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'nisn' => ['required', 'unique:users'],
+            'name' => ['required'],
+            'kelas' => ['required'],
+            'phone' => ['required'],
+            'tanggal_lahir' => ['required'],
+            'jenis_kelamin' => ['required'],
+            'photo' => ['required','image'],
+            'password' => ['required','confirmed'],
+        ]);
 
-    $photoPath = $request->file('photo')->store('users','public');
+        $photoPath = $request->file('photo')->store('users','public');
 
-    $user = User::create([
-        'nisn' => $request->nisn,
-        'name' => $request->name,
-        'kelas' => $request->kelas,
-        'phone' => $request->phone,
-        'tanggal_lahir' => $request->tanggal_lahir,
-        'jenis_kelamin' => $request->jenis_kelamin,
-        'photo' => $photoPath,
-        'password' => Hash::make($request->password),
-    ]);
+        $user = User::create([
+            'nisn' => $request->nisn,
+            'name' => $request->name,
+            'kelas' => $request->kelas,
+            'phone' => $request->phone,
+            'tanggal_lahir' => $request->tanggal_lahir,
+            'jenis_kelamin' => $request->jenis_kelamin,
+            'photo' => $photoPath,
+            'password' => Hash::make($request->password),
+            'registration_status' => 'pending',
+        ]);
 
-    event(new Registered($user));
+        event(new Registered($user));
 
-    Auth::login($user);
-
-  return redirect()->route('home');
-
-}
-
+        // Don't auto-login - redirect to login with pending message
+        return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan tunggu persetujuan admin sebelum login.');
+    }
 }

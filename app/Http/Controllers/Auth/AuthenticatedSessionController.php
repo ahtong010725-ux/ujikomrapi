@@ -26,11 +26,37 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        $user = Auth::user();
+
+        // Check registration status
+        if ($user->registration_status === 'pending') {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return back()->withErrors([
+                'login' => 'Akun anda masih menunggu persetujuan admin. Silakan tunggu hingga akun diverifikasi.'
+            ]);
+        }
+
+        if ($user->registration_status === 'rejected') {
+            $reason = $user->rejection_reason ?? 'Tidak ada alasan yang diberikan.';
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return back()->withErrors([
+                'login' => 'Akun anda ditolak oleh admin. Alasan: ' . $reason
+            ]);
+        }
+
+        // Set online status
+        $user->update([
+            'is_online' => true,
+            'last_seen' => now()
+        ]);
+
         $request->session()->regenerate();
 
-return redirect()->route('home');
-
-
+        return redirect()->route('home');
     }
 
     /**
@@ -38,6 +64,15 @@ return redirect()->route('home');
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $user = Auth::user();
+
+        if ($user) {
+            $user->update([
+                'is_online' => false,
+                'last_seen' => now()
+            ]);
+        }
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

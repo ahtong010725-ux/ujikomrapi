@@ -11,7 +11,7 @@
 <style>
 .inbox-container {
     max-width: 720px;
-    margin: 40px auto;
+    margin: 30px auto;
     background: rgba(255,255,255,0.85);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -19,26 +19,79 @@
     box-shadow: 0 8px 32px rgba(0,0,0,0.06);
     border: 1px solid rgba(255,255,255,0.7);
     overflow: hidden;
+    animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .inbox-header {
     background: linear-gradient(135deg, #2e7d32, #43a047);
     color: white;
-    padding: 22px 30px;
-    font-size: 18px;
+    padding: 20px 28px;
+    font-size: 17px;
     font-weight: 600;
     letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
+
+.inbox-header svg { margin-right: 10px; }
+
+.inbox-search {
+    padding: 14px 24px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.inbox-search input {
+    width: 100%;
+    padding: 11px 18px;
+    border-radius: 25px;
+    border: 1.5px solid rgba(0,0,0,0.08);
+    background: rgba(255,255,255,0.8);
+    color: #333;
+    font-size: 14px;
+    font-family: 'Poppins', sans-serif;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.inbox-search input::placeholder { color: #aaa; }
+
+.inbox-search input:focus {
+    border-color: #43a047;
+    box-shadow: 0 0 0 3px rgba(67,160,71,0.1);
+    background: white;
+}
+
+.inbox-section-label {
+    padding: 10px 28px;
+    background: rgba(0,0,0,0.025);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    color: #777;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.inbox-section-label svg { opacity: 0.5; }
 
 .inbox-item {
     display: flex;
     align-items: center;
-    padding: 18px 28px;
+    padding: 16px 24px;
     text-decoration: none;
     color: #333;
     border-bottom: 1px solid rgba(0,0,0,0.04);
     transition: all 0.25s ease;
-    gap: 16px;
+    gap: 14px;
 }
 
 .inbox-item:hover {
@@ -46,8 +99,8 @@
 }
 
 .inbox-avatar {
-    width: 46px;
-    height: 46px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     background: linear-gradient(135deg, #667eea, #764ba2);
     display: flex;
@@ -57,28 +110,69 @@
     font-size: 16px;
     color: white;
     flex-shrink: 0;
+    overflow: hidden;
+}
+
+.inbox-avatar.admin-avatar {
+    background: linear-gradient(135deg, #007bff, #00d2ff);
+}
+
+.inbox-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .inbox-user-info {
     flex: 1;
+    min-width: 0;
 }
 
 .inbox-user-info strong {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 6px;
     font-size: 14px;
     color: #222;
 }
 
-.inbox-user-info small {
+.inbox-preview {
     font-size: 12px;
     color: #888;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+}
+
+.inbox-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.inbox-time {
+    font-size: 11px;
+    color: #aaa;
+}
+
+.badge-admin {
+    background: linear-gradient(135deg, #007bff, #00d2ff);
+    color: white;
+    padding: 1px 7px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 600;
 }
 
 .unread-badge {
     background: linear-gradient(135deg, #e53935, #ef5350);
     color: white;
-    min-width: 24px;
-    height: 24px;
+    min-width: 22px;
+    height: 22px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -101,6 +195,27 @@
     font-size: 48px;
     margin-bottom: 16px;
 }
+
+/* Dark Mode */
+body.dark-theme .inbox-container {
+    background: rgba(20,20,20,0.6);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+body.dark-theme .inbox-header {
+    background: linear-gradient(135deg, #1a3d1e, #2e5e32);
+}
+
+body.dark-theme .inbox-search input {
+    background: rgba(40,40,40,0.8);
+    border-color: rgba(255,255,255,0.1);
+    color: #eee;
+}
+
+body.dark-theme .inbox-item { color: #ddd; border-bottom-color: rgba(255,255,255,0.05); }
+body.dark-theme .inbox-item:hover { background: rgba(255,255,255,0.04); }
+body.dark-theme .inbox-user-info strong { color: #eee; }
+body.dark-theme .inbox-section-label { background: rgba(255,255,255,0.03); color: #888; border-bottom-color: rgba(255,255,255,0.05); }
 </style>
 </head>
 
@@ -109,6 +224,17 @@
 @include('components.navbar')
 
 <div class="inbox-container">
+
+    <div class="inbox-header">
+        <div style="display:flex;align-items:center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"></path></svg>
+            Inbox
+        </div>
+    </div>
+
+    <div class="inbox-search">
+        <input type="text" id="inboxSearchInput" placeholder="Search conversations..." oninput="searchInbox()">
+    </div>
 
     <div id="inboxList">
         @include('partials.inbox-list', ['users' => $users])
@@ -124,10 +250,26 @@
 </footer>
 
 <script src="{{ asset('js/home.js') }}"></script>
+<script src="{{ asset('js/theme.js') }}"></script>
 
 <script>
+let searchTimeout;
+
+function searchInbox() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        let query = document.getElementById('inboxSearchInput').value;
+        fetch('/inbox/fetch?search=' + encodeURIComponent(query))
+        .then(res => res.text())
+        .then(data => {
+            document.getElementById("inboxList").innerHTML = data;
+        });
+    }, 300);
+}
+
 function loadInbox() {
-    fetch('/inbox/fetch')
+    let query = document.getElementById('inboxSearchInput')?.value || '';
+    fetch('/inbox/fetch?search=' + encodeURIComponent(query))
     .then(res => res.text())
     .then(data => {
         document.getElementById("inboxList").innerHTML = data;
@@ -136,7 +278,7 @@ function loadInbox() {
 
 setInterval(function() {
     loadInbox();
-}, 3000);
+}, 5000);
 </script>
 
 </body>

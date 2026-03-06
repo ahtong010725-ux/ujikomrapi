@@ -1,32 +1,46 @@
 @foreach($messages as $msg)
-<div style="display:flex; margin-bottom:10px; 
-    justify-content: {{ $msg->sender_id == auth()->id() ? 'flex-end' : 'flex-start' }};">
-
-    <div style="
-        max-width:65%;
-        padding:10px 14px;
-        border-radius:15px;
-        background-color: {{ $msg->sender_id == auth()->id() ? '#dcf8c6' : '#ffffff' }};
-        box-shadow:0 2px 5px rgba(0,0,0,0.1);
-        position:relative;
-    ">
-
-        <div style="font-size:14px;">
-            {{ $msg->message }}
-        </div>
-
-        <div style="font-size:11px; text-align:right; margin-top:4px; color:gray;">
-            {{ $msg->created_at->format('H:i') }}
-
-            @if($msg->sender_id == auth()->id())
+    @if($msg->sender_id == auth()->id())
+        <div class="chat-message sent">
+            @if($msg->image)
+                <div class="msg-image">
+                    <img src="{{ asset('storage/' . $msg->image) }}" alt="Photo" onclick="openImageModal(this.src)">
+                    @if(auth()->user()->role === 'admin')
+                        <a href="{{ asset('storage/' . $msg->image) }}" download class="download-btn" title="Download">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        </a>
+                    @endif
+                </div>
+            @endif
+            @if($msg->message)
+                <div class="msg-text">{{ $msg->message }}</div>
+            @endif
+            <span class="time">
+                {{ $msg->created_at->format('H:i') }}
                 @if($msg->is_read)
                     <span style="color:#34b7f1;">✔✔</span>
                 @else
-                    ✔✔
+                    ✔
                 @endif
-            @endif
+            </span>
         </div>
-
-    </div>
-</div>
+    @else
+        <div class="chat-message received">
+            @if($msg->image)
+                <div class="msg-image">
+                    <img src="{{ asset('storage/' . $msg->image) }}" alt="Photo" onclick="openImageModal(this.src)">
+                    @if(auth()->user()->role === 'admin')
+                        <a href="{{ asset('storage/' . $msg->image) }}" download class="download-btn" title="Download">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        </a>
+                    @endif
+                </div>
+            @endif
+            @if($msg->message)
+                <div class="msg-text">{{ $msg->message }}</div>
+            @endif
+            <span class="time">
+                {{ $msg->created_at->format('H:i') }}
+            </span>
+        </div>
+    @endif
 @endforeach

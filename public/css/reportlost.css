@@ -7,7 +7,7 @@
 }
 
 body {
-    background: linear-gradient(135deg, #fde1e1, #fff3cf, #e6f9c7);
+    background: linear-gradient(135deg, #fdfbfb 0%, #e2ebf0 100%);
     min-height: 100vh;
 }
 
@@ -34,11 +34,6 @@ body {
     transform: translateX(-4px);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
     background: rgba(255, 255, 255, 0.95);
-}
-
-.back-btn img {
-    width: 18px;
-    height: 18px;
 }
 
 /* ================= CONTAINER ================= */
@@ -76,6 +71,7 @@ body {
 .title span {
     background: linear-gradient(135deg, #2e7d32, #66bb6a);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -200,6 +196,57 @@ body {
     border-radius: 12px;
     margin-top: 10px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+/* ================= DARK MODE ================= */
+body.dark-theme {
+    background: linear-gradient(135deg, #0d0d0d 0%, #1a1a24 100%);
+}
+
+body.dark-theme .back-btn {
+    background: rgba(30, 30, 30, 0.8);
+    color: #ddd;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .title {
+    color: #f1f1f1;
+}
+
+body.dark-theme .report-box {
+    background: rgba(20, 20, 20, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-theme .form-row label {
+    color: #aaa;
+}
+
+body.dark-theme .form-row input[type="text"],
+body.dark-theme .form-row input[type="date"],
+body.dark-theme .form-row textarea {
+    background: rgba(30, 30, 30, 0.6);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #eee;
+}
+
+body.dark-theme .form-row input:focus,
+body.dark-theme .form-row textarea:focus {
+    background: rgba(40, 40, 40, 0.9);
+    border-color: #888;
+}
+
+body.dark-theme .form-row input[type="file"] {
+    background: rgba(30, 30, 30, 0.4);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #ddd;
+}
+
+body.dark-theme .reset-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #aaa;
 }
 
 /* ================= PAGE TRANSITION ================= */

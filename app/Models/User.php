@@ -11,12 +11,15 @@ class User extends Authenticatable
     'name',
     'kelas',
     'phone',
-    'tanggal_lahir', // ✅ TAMBAH
+    'tanggal_lahir',
     'jenis_kelamin',
     'photo',
     'password',
     'role',
-    'registration_status'
+    'registration_status',
+    'rejection_reason',
+    'is_online',
+    'last_seen'
 ];
 
 public function messages()
