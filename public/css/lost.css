@@ -1,0 +1,364 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #fdfbfb 0%, #e2ebf0 100%);
+    min-height: 100vh;
+}
+
+body.dark-theme {
+    background: linear-gradient(135deg, #0d0d0d 0%, #1a1a24 100%);
+}
+
+body.dark-theme .lost-hero h1 {
+    background: linear-gradient(135deg, #e0e0e0, #fff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+body.dark-theme .lost-action input {
+    background: rgba(30, 30, 30, 0.6);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .lost-action input:focus {
+    border-color: #888;
+    background: rgba(40, 40, 40, 0.9);
+}
+
+body.dark-theme .report-btn {
+    background: #e0e0e0;
+    color: #111;
+}
+
+body.dark-theme .item-card {
+    background: rgba(20, 20, 20, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-theme .card-head strong,
+body.dark-theme h4 {
+    color: #f1f1f1;
+}
+
+body.dark-theme .card-head small,
+body.dark-theme .location,
+body.dark-theme .desc {
+    color: #aaa;
+}
+
+body.dark-theme .contact-btn {
+    background: #e0e0e0;
+    color: #111;
+    border: 1px solid #e0e0e0;
+}
+
+body.dark-theme footer {
+    background: #111;
+    color: #888;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme footer h4 {
+    color: #eee;
+}
+
+/* ================= HERO ================= */
+.lost-hero {
+    text-align: center;
+    padding: 70px 20px 40px;
+}
+
+.lost-hero h1 {
+    font-size: 44px;
+    margin-bottom: 25px;
+    color: #222;
+    background: linear-gradient(135deg, #333, #555);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.lost-action {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+}
+
+.lost-action input {
+    padding: 14px 24px;
+    border-radius: 25px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    width: 280px;
+    font-size: 14px;
+    font-family: 'Poppins', sans-serif;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    outline: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.lost-action input:focus {
+    border-color: #555;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.report-btn {
+    background: #111;
+    color: white;
+    padding: 14px 28px;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transition: all 0.35s ease;
+}
+
+.report-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+.report-btn img {
+    width: 28px;
+}
+
+/* ================= ITEM LIST ================= */
+.lost-list {
+    padding: 30px 60px 50px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+.item-card {
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    transition: all 0.35s ease;
+}
+
+.item-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 45px rgba(0, 0, 0, 0.12);
+}
+
+.card-head {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card-head strong {
+    display: block;
+    font-size: 14px;
+    color: #222;
+}
+
+.card-head small {
+    font-size: 11px;
+    color: #999;
+}
+
+.card-img img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
+
+h4 {
+    font-size: 16px;
+    color: #222;
+    margin-bottom: 4px;
+}
+
+.location {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 6px;
+}
+
+.desc {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 12px;
+}
+
+/* ================= BUTTONS ================= */
+.contact-btn {
+    display: inline-block;
+    background: #111;
+    color: white;
+    text-align: center;
+    padding: 8px 18px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid #111;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.contact-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.delete-btn {
+    background: #dc3545 !important;
+    border-color: #dc3545 !important;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2) !important;
+}
+
+.delete-btn:hover {
+    box-shadow: 0 6px 18px rgba(220, 53, 69, 0.3) !important;
+}
+
+/* ================= PARTICLE ================= */
+.particle {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    background: rgba(255, 180, 90, .9);
+    border-radius: 50%;
+    animation: explode .8s ease-out forwards;
+    pointer-events: none;
+}
+
+@keyframes explode {
+    to {
+        transform: translate(var(--x), var(--y)) scale(0);
+        opacity: 0;
+    }
+}
+
+/* ================= FOOTER ================= */
+footer {
+    background: white;
+    padding: 45px 80px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #555;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+footer h4 {
+    font-size: 14px;
+    margin-bottom: 10px;
+    color: #222;
+}
+
+footer div {
+    line-height: 1.8;
+}
+
+/* ================= PAGE TRANSITION ================= */
+body {
+    opacity: 0;
+    animation: pageFadeIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+body.page-exit {
+    animation: pageFadeOut 0.4s ease forwards;
+}
+
+@keyframes pageFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pageFadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+    .lost-hero {
+        padding: 30px 16px;
+    }
+
+    .lost-hero h1 {
+        font-size: 28px;
+    }
+
+    .lost-action {
+        flex-direction: column;
+        width: 100%;
+        gap: 12px;
+    }
+
+    .lost-action input,
+    .report-btn {
+        width: 100%;
+    }
+
+    .lost-list {
+        grid-template-columns: 1fr;
+        padding: 20px 16px;
+    }
+
+    footer {
+        flex-direction: column;
+        gap: 20px;
+        padding: 30px 20px;
+        text-align: center;
+    }
+}

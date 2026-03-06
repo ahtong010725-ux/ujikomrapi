@@ -1,0 +1,87 @@
+/* ===============================
+   GLOBAL RESPONSIVE (ALL PAGES)
+================================ */
+
+@media (max-width: 768px) {
+
+    /* NAVBAR */
+    nav {
+        flex-direction: column;
+        align-items: center;
+        padding: 14px 16px;
+    }
+
+    nav .logo {
+        margin-bottom: 10px;
+    }
+
+    nav ul {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    nav ul li a {
+        font-size: 14px;
+    }
+
+    /* HERO / TITLE */
+    h1 {
+        font-size: 26px !important;
+        text-align: center;
+    }
+
+    /* ACTION / BUTTON */
+    .lost-action,
+    .found-action,
+    .home-action {
+        flex-direction: column;
+        width: 100%;
+        gap: 12px;
+    }
+
+    input,
+    select,
+    textarea,
+    .report-btn,
+    .submit-btn,
+    .action-btn {
+        width: 100%;
+    }
+
+    /* GRID LIST */
+    .lost-list,
+    .found-list,
+    .items {
+        grid-template-columns: 1fr;
+        padding: 24px 16px;
+    }
+
+    /* FORM */
+    .report-form {
+        grid-template-columns: 1fr !important;
+    }
+
+    .form-group.full {
+        grid-column: span 1 !important;
+    }
+
+    /* FOOTER */
+    footer {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 20px;
+    }
+}
+
+/* EXTRA SMALL */
+@media (max-width: 480px) {
+
+    h1 {
+        font-size: 22px !important;
+    }
+
+    nav ul li a {
+        font-size: 13px;
+    }
+}

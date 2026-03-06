@@ -1,0 +1,161 @@
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #fdfbfb 0%, #e2ebf0 100%);
+}
+
+body.dark-theme {
+    background: linear-gradient(135deg, #0d0d0d 0%, #1a1a24 100%);
+}
+
+body.dark-theme .login-card {
+    background: rgba(20, 20, 20, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-theme .login-card h2,
+body.dark-theme .login-card label {
+    color: #f1f1f1;
+}
+
+body.dark-theme .login-card input {
+    background: rgba(30, 30, 30, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+body.dark-theme .btn-dark {
+    background: #e0e0e0;
+    color: #111;
+}
+
+body.dark-theme .btn-light {
+    background: #333;
+    color: #eee;
+}
+
+body.dark-theme .forgot-link {
+    color: #cbd5e1;
+}
+
+body.dark-theme .footer {
+    background: #111;
+    color: #888;
+}
+
+.navbar {
+    padding: 15px 40px;
+}
+
+.login-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    gap: 50px;
+}
+
+.login-left {
+    position: relative;
+}
+
+.login-left img {
+    width: 500px;
+    border-radius: 10px;
+}
+
+.overlay-text {
+    position: absolute;
+    top: 30%;
+    left: 10%;
+    color: white;
+    width: 80%;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.login-right {
+    display: flex;
+    justify-content: center;
+}
+
+.login-card {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 30px;
+    border-radius: 20px;
+    width: 320px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.login-card h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.login-card label {
+    display: block;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.login-card input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border-radius: 5px;
+    border: 1px solid #aaa;
+}
+
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper .eye {
+    position: absolute;
+    right: 10px;
+    top: 8px;
+    cursor: pointer;
+}
+
+.btn-group {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+.btn-dark {
+    background: #222;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+}
+
+.btn-light {
+    background: #eee;
+    padding: 8px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    color: black;
+}
+
+.forgot-link {
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+    font-size: 13px;
+    color: black;
+}
+
+.footer {
+    margin-top: 40px;
+    background: #eee;
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+}
