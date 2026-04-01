@@ -17,7 +17,8 @@ class Claim extends Model
         'confirmed_at',
         'flag_reason',
         'admin_notes',
-        'proof'
+        'proof',
+        'proof_photo'
     ];
 
     protected $casts = [

@@ -32,6 +32,18 @@ class FoundController extends Controller
 
     public function store(Request $request)
     {
+        // Anti-cheat: Max 5 found posts per day
+        $todayPosts = FoundItem::where('user_id', auth()->id())
+            ->whereDate('created_at', today())
+            ->count();
+
+        if ($todayPosts >= 5) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['message' => 'Kamu sudah mencapai batas posting hari ini (max 5/hari). Coba lagi besok.'], 429);
+            }
+            return back()->with('error', 'Kamu sudah mencapai batas posting hari ini (max 5/hari). Coba lagi besok.');
+        }
+
         $request->validate([
             'brand_name' => 'nullable',
             'item_name' => 'required',

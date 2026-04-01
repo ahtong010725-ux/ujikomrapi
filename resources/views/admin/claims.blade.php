@@ -19,6 +19,7 @@
                         <th>Item</th>
                         <th>Type</th>
                         <th>Bukti</th>
+                        <th>Foto Bukti</th>
                         <th>Tanggal</th>
                         <th>Actions</th>
                     </tr>
@@ -44,6 +45,15 @@
                             </span>
                         </td>
                         <td style="max-width: 200px; font-size: 12px;">{{ $claim->proof }}</td>
+                        <td>
+                            @if($claim->proof_photo)
+                                <a href="{{ asset('storage/' . $claim->proof_photo) }}" target="_blank">
+                                    <img src="{{ asset('storage/' . $claim->proof_photo) }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;">
+                                </a>
+                            @else
+                                <span style="color:#999; font-size: 12px;">—</span>
+                            @endif
+                        </td>
                         <td>{{ $claim->created_at->format('d M Y H:i') }}</td>
                         <td>
                             <div style="display: flex; gap: 5px; flex-wrap: wrap;">

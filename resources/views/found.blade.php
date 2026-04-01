@@ -97,15 +97,7 @@
                 Inbox
             </a>
 
-            @if($item->status != 'resolved')
-            <form action="{{ route('found.status', $item->id) }}" method="POST">
-                @csrf
-                @method('PATCH')
-                <button type="submit" class="contact-btn verify-manual-btn" onclick="return confirm('Tandai sebagai sudah terverifikasi/ditemukan?')">
-                    🔍 Verifikasi
-                </button>
-            </form>
-            @endif
+
 
         @else
 
@@ -236,11 +228,15 @@
             <button type="button" class="report-modal-close" onclick="hideClaimModal()">&times;</button>
         </div>
         <p style="color:#666; font-size:13px; margin-bottom:16px;">Jelaskan bahwa ini adalah barang kamu yang hilang. Admin akan memverifikasi dan menghubungkan kamu dengan penemu.</p>
-        <form id="claimForm" method="POST">
+        <form id="claimForm" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="modal-form-row">
                 <label>Bukti Klaim</label>
                 <textarea name="proof" placeholder="Deskripsikan bukti klaim kamu..." required></textarea>
+            </div>
+            <div class="modal-form-row">
+                <label>Upload Foto Bukti</label>
+                <input type="file" name="proof_photo" accept="image/*">
             </div>
             <div class="modal-actions">
                 <button type="submit" class="modal-submit-btn">Kirim Klaim</button>

@@ -103,16 +103,6 @@
             Inbox
         </a>
 
-        @if($item->status != 'resolved')
-            <form action="{{ route('lost.status', $item->id) }}" method="POST">
-                @csrf
-                @method('PATCH')
-                <button type="submit" class="contact-btn verify-manual-btn" onclick="return confirm('Tandai sebagai sudah terverifikasi/ditemukan?')">
-                    🔍 Verifikasi
-                </button>
-            </form>
-        @endif
-
     @else
 
         <!-- Other users -->

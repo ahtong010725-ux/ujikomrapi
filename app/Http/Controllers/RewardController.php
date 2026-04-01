@@ -39,7 +39,8 @@ class RewardController extends Controller
     public function claimItem(Request $request, $type, $id)
     {
         $request->validate([
-            'proof' => 'required|string|max:500'
+            'proof' => 'required|string|max:500',
+            'proof_photo' => 'nullable|image|max:5120'
         ]);
 
         if ($type !== 'found') {
@@ -73,12 +74,18 @@ class RewardController extends Controller
             return back()->with('error', 'Barang ini sudah di-resolve.');
         }
 
+        $proofPhotoPath = null;
+        if ($request->hasFile('proof_photo')) {
+            $proofPhotoPath = $request->file('proof_photo')->store('proof_photos', 'public');
+        }
+
         Claim::create([
             'claimer_id' => auth()->id(),
             'item_id' => $id,
             'item_type' => 'found',
             'status' => 'pending',
-            'proof' => $request->proof
+            'proof' => $request->proof,
+            'proof_photo' => $proofPhotoPath,
         ]);
 
         return back()->with('success', 'Klaim berhasil dikirim! Menunggu verifikasi admin. Jika disetujui, penemu akan mendapat 10 poin.');

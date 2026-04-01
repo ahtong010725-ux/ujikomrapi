@@ -120,37 +120,82 @@ class AdminController extends Controller
             return back()->with('error', 'Klaim ini sudah diproses.');
         }
 
-        $claim->update([
-            'status' => 'approved',
-            'owner_confirmed' => true,
-            'confirmed_at' => now(),
-        ]);
-
         $item = $claim->getItemModel();
         if (!$item) {
-            return back()->with('success', 'Klaim disetujui.');
+            $claim->update(['status' => 'approved', 'owner_confirmed' => true, 'confirmed_at' => now()]);
+            return back()->with('success', 'Klaim disetujui (item sudah dihapus, no points).');
         }
 
-        // Points always go to the found item poster (the finder/reporter)
+        // Points go to the found item poster
         $finderId = $item->user_id;
-
+        $claimerId = $claim->claimer_id;
         $pointsAwarded = 10;
         $month = now()->month;
         $year = now()->year;
 
-        $userPoint = UserPoint::firstOrCreate(
+        // === ANTI-CHEAT CHECKS ===
+
+        // 1. Self-claiming check (claimer == poster)
+        if ($finderId == $claimerId) {
+            $claim->update(['status' => 'rejected', 'admin_notes' => 'Auto-reject: self-claim detected.']);
+            return back()->with('error', '❌ Klaim ditolak: poster dan claimer adalah orang yang sama.');
+        }
+
+        // 2. Monthly points cap (max 50 per month)
+        $userPoint = UserPoint::where('user_id', $finderId)
+            ->where('month', $month)
+            ->where('year', $year)
+            ->first();
+
+        if ($userPoint && $userPoint->points >= 50) {
+            $claim->update(['status' => 'approved', 'owner_confirmed' => true, 'confirmed_at' => now()]);
+            $item->update(['status' => 'resolved']);
+            return back()->with('warning', '⚠️ Klaim disetujui, tapi penemu sudah mencapai batas 50 poin bulan ini. Tidak ada poin ditambah.');
+        }
+
+        // 3. Same user pair can only earn points 1x per month
+        $pairInteractionsThisMonth = Claim::where('item_type', 'found')
+            ->where('claimer_id', $claimerId)
+            ->where('status', 'approved')
+            ->whereMonth('confirmed_at', $month)
+            ->whereYear('confirmed_at', $year)
+            ->get()
+            ->filter(function ($c) use ($finderId) {
+                $cItem = $c->getItemModel();
+                return $cItem && $cItem->user_id == $finderId;
+            })
+            ->count();
+
+        if ($pairInteractionsThisMonth >= 1) {
+            $claim->update(['status' => 'approved', 'owner_confirmed' => true, 'confirmed_at' => now()]);
+            $item->update(['status' => 'resolved']);
+            return back()->with('warning', '⚠️ Klaim disetujui, tapi pasangan user ini sudah pernah berinteraksi bulan ini. Poin tidak diberikan.');
+        }
+
+        // 4. Rapid post-then-claim detection (< 5 min between post and claim = suspicious)
+        $minutesBetween = $item->created_at->diffInMinutes($claim->created_at);
+        if ($minutesBetween < 5) {
+            $claim->update(['status' => 'approved', 'owner_confirmed' => true, 'confirmed_at' => now(), 'flag_reason' => 'Klaim dikirim < 5 menit setelah item diposting.']);
+            $item->update(['status' => 'resolved']);
+            return back()->with('warning', '⚠️ Klaim disetujui, tapi terdeteksi mencurigakan (klaim < 5 menit). Poin tidak diberikan.');
+        }
+
+        // === ALL CHECKS PASSED — AWARD POINTS ===
+        $claim->update(['status' => 'approved', 'owner_confirmed' => true, 'confirmed_at' => now()]);
+
+        $userPointRecord = UserPoint::firstOrCreate(
             ['user_id' => $finderId, 'month' => $month, 'year' => $year],
             ['points' => 0, 'total_earned' => 0]
         );
-        $userPoint->increment('points', $pointsAwarded);
-        $userPoint->increment('total_earned', $pointsAwarded);
+        $userPointRecord->increment('points', $pointsAwarded);
+        $userPointRecord->increment('total_earned', $pointsAwarded);
 
         // Mark item as resolved
         $item->update(['status' => 'resolved']);
 
         // Auto-resolve matching lost items from claimer
-        if ($claim->claimer_id) {
-            $claimerLostItems = LostItem::where('user_id', $claim->claimer_id)
+        if ($claimerId) {
+            $claimerLostItems = LostItem::where('user_id', $claimerId)
                 ->where('status', '!=', 'resolved')
                 ->get();
 
@@ -166,7 +211,7 @@ class AdminController extends Controller
         }
 
         $finderName = User::find($finderId)->name ?? 'User';
-        return back()->with('success', 'Klaim disetujui! ' . $pointsAwarded . ' poin diberikan ke penemu: ' . $finderName);
+        return back()->with('success', '✅ Klaim disetujui! ' . $pointsAwarded . ' poin diberikan ke penemu: ' . $finderName);
     }
 
     public function rejectClaim(Request $request, $id)

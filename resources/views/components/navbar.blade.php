@@ -1,3 +1,4 @@
+@include('components.toast')
 <nav class="navbar" id="mainNavbar">
 
     <div class="logo">
@@ -49,6 +50,12 @@
                 </a>
             </li>
 
+            {{-- Profile as regular nav link (visible on mobile, hidden on desktop via CSS) --}}
+            <li class="mobile-nav-item">
+                <a href="/profile">Profile</a>
+            </li>
+
+            {{-- Desktop-only avatar dropdown --}}
             <li class="user-menu">
                 <div class="user-avatar" onclick="toggleDropdown()">
                     <img src="{{ asset('storage/' . auth()->user()->photo) }}">
@@ -69,11 +76,6 @@
                         <button type="submit">Logout</button>
                     </form>
                 </div>
-            </li>
-
-            {{-- Mobile-only profile --}}
-            <li class="mobile-profile-item">
-                <a href="/profile">👤 Profile</a>
             </li>
 
             {{-- Mobile-only logout --}}
