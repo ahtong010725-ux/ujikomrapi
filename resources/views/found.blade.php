@@ -71,10 +71,6 @@
     <p class="location">{{ $item->location }}</p>
     <p class="desc">{{ $item->description }}</p>
 
-    @if($item->reward_offered)
-    <p style="font-size: 13px; color: #e67e22; font-weight: 600; margin-top: 6px;">🎁 Imbalan: Rp. {{ number_format((int) preg_replace('/[^0-9]/', '', $item->reward_offered), 0, ',', '.') }}</p>
-    @endif
-
     <div class="action-buttons" style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 10px;">
 
     @if(auth()->check())
@@ -110,6 +106,10 @@
                 ✋ Ini Barang Saya
             </button>
             @endif
+
+            <button type="button" class="contact-btn" style="background-color: #e53935; color: white; font-size: 11px;" onclick="showReportUserModal({{ $item->user_id }}, '{{ addslashes($item->user->name ?? 'User') }}')">
+                🚩 Laporkan
+            </button>
 
         @endif
 
@@ -148,13 +148,6 @@
             <div class="modal-form-row">
                 <label>Deskripsi</label>
                 <textarea name="description" placeholder="Deskripsikan barang secara detail..." required></textarea>
-            </div>
-            <div class="modal-form-row">
-                <label>Imbalan (opsional)</label>
-                <div class="input-prefix-wrap">
-                    <span class="input-prefix">Rp.</span>
-                    <input type="text" name="reward_offered" placeholder="Contoh: 50.000 atau Traktir makan">
-                </div>
             </div>
             <div class="modal-form-row">
                 <label>Upload Foto</label>
@@ -201,13 +194,6 @@
                 <textarea name="description" id="edit_description" required></textarea>
             </div>
             <div class="modal-form-row">
-                <label>Imbalan (opsional)</label>
-                <div class="input-prefix-wrap">
-                    <span class="input-prefix">Rp.</span>
-                    <input type="text" name="reward_offered" id="edit_reward_offered" placeholder="Contoh: 50.000">
-                </div>
-            </div>
-            <div class="modal-form-row">
                 <label>Ganti Foto</label>
                 <input type="file" name="photo" accept="image/*">
             </div>
@@ -245,6 +231,30 @@
         </form>
     </div>
 </div>
+
+<!-- Report User Modal -->
+@auth
+<div id="reportUserModal" class="report-modal-overlay" style="display:none;">
+    <div class="report-modal-box">
+        <div class="report-modal-header">
+            <h3>🚩 Laporkan Pengguna</h3>
+            <button type="button" class="report-modal-close" onclick="hideReportUserModal()">&times;</button>
+        </div>
+        <p style="color:#666; font-size:13px; margin-bottom:16px;">Laporkan pengguna <strong id="reportUserName"></strong> jika melakukan pelanggaran.</p>
+        <form id="reportUserForm" method="POST">
+            @csrf
+            <div class="modal-form-row">
+                <label>Alasan Pelaporan</label>
+                <textarea name="reason" placeholder="Jelaskan alasan kamu melaporkan pengguna ini..." required></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="modal-submit-btn">Kirim Laporan</button>
+                <button type="button" class="modal-cancel-btn" onclick="hideReportUserModal()">Batal</button>
+            </div>
+        </form>
+    </div>
+</div>
+@endauth
 
 <footer>
     <div>
@@ -321,6 +331,7 @@ document.getElementById('reportForm').addEventListener('submit', function(e) {
     .then(data => {
         closeReportModal();
         refreshItemList();
+        showToast('Report berhasil dikirim!', 'success');
     })
     .catch(err => {
         if (err.errors) {
@@ -330,6 +341,7 @@ document.getElementById('reportForm').addEventListener('submit', function(e) {
             errDiv.textContent = err.message || 'Terjadi kesalahan. Coba lagi.';
         }
         errDiv.style.display = 'block';
+        showToast(err.message || 'Gagal mengirim report', 'error');
     })
     .finally(() => {
         btn.disabled = false;
@@ -391,6 +403,7 @@ document.getElementById('editForm').addEventListener('submit', function(e) {
     .then(data => {
         closeEditModal();
         refreshItemList();
+        showToast('Data berhasil diupdate!', 'success');
     })
     .catch(err => {
         if (err.errors) {
@@ -400,6 +413,7 @@ document.getElementById('editForm').addEventListener('submit', function(e) {
             errDiv.textContent = err.message || 'Terjadi kesalahan. Coba lagi.';
         }
         errDiv.style.display = 'block';
+        showToast(err.message || 'Gagal mengupdate data', 'error');
     })
     .finally(() => {
         btn.disabled = false;
@@ -495,6 +509,19 @@ refreshItemList = function() {
             }
         });
 };
+
+// ==================== REPORT USER ====================
+function showReportUserModal(userId, userName) {
+    document.getElementById('reportUserModal').style.display = 'flex';
+    document.getElementById('reportUserName').textContent = userName;
+    document.getElementById('reportUserForm').action = '/report-user/' + userId;
+}
+function hideReportUserModal() {
+    document.getElementById('reportUserModal').style.display = 'none';
+}
+document.getElementById('reportUserModal')?.addEventListener('click', function(e) {
+    if (e.target === this) hideReportUserModal();
+});
 </script>
 
 </body>

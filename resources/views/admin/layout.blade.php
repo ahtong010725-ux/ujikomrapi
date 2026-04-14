@@ -215,6 +215,10 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
             Manage Users
         </a>
+        <a href="{{ route('admin.students') }}" class="{{ request()->routeIs('admin.students') ? 'active' : '' }}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+            📚 Daftar Siswa
+        </a>
         <a href="{{ route('admin.items') }}" class="{{ request()->routeIs('admin.items') ? 'active' : '' }}">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
             Manage Items
@@ -222,6 +226,14 @@
         <a href="{{ route('admin.claims') }}" class="{{ request()->routeIs('admin.claims') ? 'active' : '' }}">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             Manage Claims
+        </a>
+        <a href="{{ route('admin.reports') }}" class="{{ request()->routeIs('admin.reports') ? 'active' : '' }}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l18 18"/><path d="M10.5 10.5L3 18V3h15l-7.5 7.5z"/></svg>
+            User Reports
+        </a>
+        <a href="{{ route('admin.champions') }}" class="{{ request()->routeIs('admin.champions') ? 'active' : '' }}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+            Monthly Champions
         </a>
 
         <div class="sidebar-bottom">
@@ -243,6 +255,11 @@
             <div class="alert alert-error">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
                 {{ session('error') }}
+            </div>
+        @endif
+        @if(session('warning'))
+            <div class="alert" style="background: linear-gradient(135deg, #e65100, #f57c00);">
+                ⚠️ {{ session('warning') }}
             </div>
         @endif
 

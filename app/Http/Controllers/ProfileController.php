@@ -26,7 +26,9 @@ class ProfileController extends Controller
                 'phone' => 'required',
                 'tanggal_lahir' => 'required|date',
                 'jenis_kelamin' => 'required',
-                'photo' => 'nullable|image|max:2048'
+                'photo' => 'nullable|image|max:2048',
+                'ewallet_type' => 'nullable|string|in:Dana,GoPay,OVO,ShopeePay',
+                'ewallet_number' => 'nullable|string|max:20',
             ]);
 
             if ($request->hasFile('photo')) {
@@ -43,6 +45,8 @@ class ProfileController extends Controller
             $user->phone = $request->phone;
             $user->tanggal_lahir = $request->tanggal_lahir;
             $user->jenis_kelamin = $request->jenis_kelamin;
+            $user->ewallet_type = $request->ewallet_type;
+            $user->ewallet_number = $request->ewallet_number;
 
             $user->save();
 

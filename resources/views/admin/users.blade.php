@@ -42,6 +42,15 @@
                                 <br><small style="color: #e53935; font-size: 11px; margin-top: 4px; display: block;">{{ $user->rejection_reason }}</small>
                             @endif
                         @endif
+                        @if($user->ban_type)
+                            <br>
+                            <span class="status-badge" style="background: {{ $user->ban_type === 'hard' ? 'linear-gradient(135deg, #b71c1c, #c62828)' : 'linear-gradient(135deg, #e65100, #f57c00)' }}; margin-top: 4px;">
+                                {{ $user->ban_type === 'hard' ? '🔴 Hard Ban' : '🟡 Soft Ban' }}
+                            </span>
+                            @if($user->ban_expires_at)
+                                <br><small style="color:#888; font-size:10px;">s/d {{ $user->ban_expires_at->format('d-m-Y H:i') }}</small>
+                            @endif
+                        @endif
                     </td>
                     <td>{{ $user->created_at->format('d M Y') }}</td>
                     <td>
@@ -58,6 +67,21 @@
                                         <button type="submit" class="btn-reject">Reject</button>
                                     </div>
                                 </form>
+                            @endif
+                            @if($user->role !== 'admin')
+                                @if($user->ban_type)
+                                    <form action="{{ route('admin.users.unban', $user->id) }}" method="POST" onsubmit="return confirm('Cabut ban untuk {{ $user->name }}?')">
+                                        @csrf
+                                        <button type="submit" class="btn-approve" style="font-size:11px; padding:5px 10px;">✅ Unban</button>
+                                    </form>
+                                @else
+                                    <form action="{{ route('admin.users.ban', $user->id) }}" method="POST" onsubmit="return confirm('Ban {{ $user->name }}?')">
+                                        @csrf
+                                        <input type="hidden" name="ban_type" value="soft">
+                                        <input type="hidden" name="ban_reason" value="Dikenakan oleh admin.">
+                                        <button type="submit" class="btn-danger" style="font-size:11px; padding:5px 10px; background: linear-gradient(135deg, #e65100, #f57c00);">🟡 Soft Ban</button>
+                                    </form>
+                                @endif
                             @endif
                             <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus user ini?')">
                                 @csrf

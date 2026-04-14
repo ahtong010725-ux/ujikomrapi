@@ -243,6 +243,31 @@ body.dark-theme .lb-table-header { background: linear-gradient(135deg, #12121a, 
         </div>
     </div>
 
+    {{-- Champion Banner --}}
+    @if($champion)
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 20px; padding: 24px 28px; margin-bottom: 24px; color: white; display: flex; align-items: center; gap: 20px; box-shadow: 0 8px 32px rgba(102,126,234,0.3); animation: fadeInUp 0.5s ease;">
+        <div style="font-size: 48px;">🏆</div>
+        <div style="flex:1;">
+            <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; margin-bottom: 4px;">Champion {{ $monthName }}</div>
+            <div style="font-size: 20px; font-weight: 700;">{{ $champion->user->name ?? 'User' }}</div>
+            <div style="font-size: 13px; opacity: 0.9; margin-top: 2px;">{{ $champion->points }} poin</div>
+        </div>
+        <div style="text-align: right;">
+            @if($champion->reward_amount)
+                <div style="font-size: 11px; opacity: 0.8;">Hadiah</div>
+                <div style="font-size: 18px; font-weight: 700;">Rp {{ number_format($champion->reward_amount, 0, ',', '.') }}</div>
+                @if($champion->reward_status === 'paid')
+                    <div style="font-size: 11px; background: rgba(255,255,255,0.2); padding: 2px 10px; border-radius: 8px; margin-top: 4px;">✅ Sudah dibayar</div>
+                @else
+                    <div style="font-size: 11px; background: rgba(255,255,255,0.2); padding: 2px 10px; border-radius: 8px; margin-top: 4px;">⏳ Menunggu</div>
+                @endif
+            @else
+                <div style="font-size: 12px; opacity: 0.7;">Hadiah segera diumumkan</div>
+            @endif
+        </div>
+    </div>
+    @endif
+
     @if($badges->count() > 0)
     <div class="badges-section">
         <h3>🎖️ Available Badges</h3>

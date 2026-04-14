@@ -9,6 +9,10 @@ use App\Models\FoundItem;
 use App\Models\Claim;
 use App\Models\UserPoint;
 use App\Models\Badge;
+use App\Models\Message;
+use App\Models\UserReport;
+use App\Models\MonthlyChampion;
+use App\Models\Student;
 
 class AdminController extends Controller
 {
@@ -77,6 +81,12 @@ class AdminController extends Controller
         }
 
         $user = User::findOrFail($id);
+
+        // Reset student registration status if linked
+        if ($user->student_id) {
+            Student::where('id', $user->student_id)->update(['is_registered' => false]);
+        }
+
         $user->delete();
 
         return back()->with('success', 'User berhasil dihapus.');
@@ -180,6 +190,14 @@ class AdminController extends Controller
             return back()->with('warning', '⚠️ Klaim disetujui, tapi terdeteksi mencurigakan (klaim < 5 menit). Poin tidak diberikan.');
         }
 
+        // 5. Admin exemption — admin poster doesn't earn points
+        $finderUser = User::find($finderId);
+        if ($finderUser && $finderUser->role === 'admin') {
+            $claim->update(['status' => 'approved', 'owner_confirmed' => true, 'confirmed_at' => now()]);
+            $item->update(['status' => 'resolved']);
+            return back()->with('success', '✅ Klaim disetujui! Admin tidak mendapat poin.');
+        }
+
         // === ALL CHECKS PASSED — AWARD POINTS ===
         $claim->update(['status' => 'approved', 'owner_confirmed' => true, 'confirmed_at' => now()]);
 
@@ -218,15 +236,339 @@ class AdminController extends Controller
     {
         $claim = Claim::findOrFail($id);
 
-        if ($claim->status !== 'pending') {
+        if (!in_array($claim->status, ['pending', 'flagged'])) {
             return back()->with('error', 'Klaim ini sudah diproses.');
         }
 
+        $reason = $request->admin_notes ?? 'Klaim ditolak oleh admin.';
+
         $claim->update([
             'status' => 'rejected',
-            'admin_notes' => $request->admin_notes ?? 'Klaim ditolak oleh admin.'
+            'admin_notes' => $reason
         ]);
 
-        return back()->with('success', 'Klaim ditolak.');
+        // Send rejection notification via chat
+        Message::create([
+            'sender_id' => auth()->id(),
+            'receiver_id' => $claim->claimer_id,
+            'message' => '❌ Klaim kamu untuk barang "' . ($claim->getItemModel()->item_name ?? 'Unknown') . '" ditolak.' . "\n\nAlasan: " . $reason . "\n\nKamu bisa mengajukan klaim lagi dengan bukti yang lebih jelas.",
+            'is_read' => false
+        ]);
+
+        return back()->with('success', 'Klaim ditolak. Notifikasi telah dikirim ke user.');
+    }
+
+    // ===================== USER REPORTS =====================
+
+    public function reports()
+    {
+        $reports = UserReport::with(['reporter', 'reportedUser'])->latest()->get();
+        return view('admin.reports', compact('reports'));
+    }
+
+    public function resolveReport(Request $request, $id)
+    {
+        $report = UserReport::findOrFail($id);
+        $report->update([
+            'status' => 'resolved',
+            'admin_notes' => $request->admin_notes ?? 'Ditinjau oleh admin.'
+        ]);
+
+        // Auto-send message to reported user asking for clarification
+        $reportedUser = $report->reportedUser;
+        $reporter = $report->reporter;
+        if ($reportedUser) {
+            Message::create([
+                'sender_id' => auth()->id(),
+                'receiver_id' => $reportedUser->id,
+                'message' => "⚠️ Kamu telah dilaporkan oleh pengguna lain.\n\nAlasan: " . $report->reason . "\n\nCatatan Admin: " . ($request->admin_notes ?? 'Tidak ada catatan.') . "\n\nAdmin meminta keterangan lebih lanjut. Silakan balas pesan ini untuk memberikan penjelasan.",
+                'is_read' => false
+            ]);
+        }
+
+        return back()->with('success', 'Laporan resolved. Pesan otomatis telah dikirim ke user yang dilaporkan.');
+    }
+
+    public function banFromReport(Request $request, $id)
+    {
+        $report = UserReport::findOrFail($id);
+        $user = $report->reportedUser;
+
+        if (!$user) {
+            return back()->with('error', 'User tidak ditemukan.');
+        }
+
+        $banType = $request->ban_type ?? 'soft';
+        $duration = $request->ban_duration; // in days, null = until admin lifts
+        $reason = $request->ban_reason ?? $report->reason;
+
+        $expiresAt = null;
+        if ($duration && $banType === 'hard') {
+            $expiresAt = now()->addDays((int) $duration);
+        }
+
+        $user->update([
+            'ban_type' => $banType,
+            'banned_at' => now(),
+            'ban_expires_at' => $expiresAt,
+            'ban_reason' => $reason,
+        ]);
+
+        // Mark report as resolved
+        $report->update([
+            'status' => 'resolved',
+            'admin_notes' => ($banType === 'hard' ? '🔴 Hard Banned' : '🟡 Soft Banned') . ($duration ? " ({$duration} hari)" : ' (sampai dicabut)') . ' — ' . $reason,
+        ]);
+
+        // Notify user via chat
+        $banMsg = $banType === 'hard'
+            ? "🚫 Akun kamu telah di-HARD BAN.\n\nAlasan: {$reason}\n" . ($duration ? "Durasi: {$duration} hari (sampai " . $expiresAt->format('d-m-Y H:i') . ")" : "Durasi: Sampai admin mencabut ban.") . "\n\nKamu tidak bisa login selama ban berlaku."
+            : "⚠️ Akun kamu telah di-SOFT BAN.\n\nAlasan: {$reason}\n\nKamu masih bisa melihat halaman, tapi tidak bisa melakukan aksi (post, klaim, chat) sampai ban dicabut.";
+
+        Message::create([
+            'sender_id' => auth()->id(),
+            'receiver_id' => $user->id,
+            'message' => $banMsg,
+            'is_read' => false
+        ]);
+
+        return back()->with('success', ($banType === 'hard' ? '🔴 Hard Ban' : '🟡 Soft Ban') . ' diterapkan ke ' . $user->name);
+    }
+
+    public function banUser(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        if ($user->role === 'admin') {
+            return back()->with('error', 'Tidak bisa mem-ban admin.');
+        }
+
+        $banType = $request->ban_type ?? 'soft';
+        $duration = $request->ban_duration;
+        $reason = $request->ban_reason ?? 'Dikenakan oleh admin.';
+
+        $expiresAt = null;
+        if ($duration && $banType === 'hard') {
+            $expiresAt = now()->addDays((int) $duration);
+        }
+
+        $user->update([
+            'ban_type' => $banType,
+            'banned_at' => now(),
+            'ban_expires_at' => $expiresAt,
+            'ban_reason' => $reason,
+        ]);
+
+        return back()->with('success', ($banType === 'hard' ? '🔴 Hard Ban' : '🟡 Soft Ban') . ' diterapkan ke ' . $user->name);
+    }
+
+    public function unbanUser($id)
+    {
+        $user = User::findOrFail($id);
+        $user->update([
+            'ban_type' => null,
+            'banned_at' => null,
+            'ban_expires_at' => null,
+            'ban_reason' => null,
+        ]);
+
+        // Notify
+        Message::create([
+            'sender_id' => auth()->id(),
+            'receiver_id' => $user->id,
+            'message' => "✅ Ban kamu telah dicabut. Kamu sekarang bisa menggunakan platform secara normal kembali.",
+            'is_read' => false
+        ]);
+
+        return back()->with('success', '✅ Ban dicabut untuk ' . $user->name);
+    }
+
+    // ===================== STUDENT MANAGEMENT =====================
+
+    public function students(Request $request)
+    {
+        $kelasFilter = $request->get('kelas', '');
+        $search = $request->get('search', '');
+
+        $query = Student::orderBy('kelas')->orderBy('name');
+
+        if ($kelasFilter) {
+            $query->where('kelas', $kelasFilter);
+        }
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nisn', 'like', "%{$search}%")
+                  ->orWhere('name', 'like', "%{$search}%");
+            });
+        }
+
+        $students = $query->get();
+        $kelasList = Student::distinct()->pluck('kelas')->sort();
+
+        return view('admin.students', compact('students', 'kelasList', 'kelasFilter', 'search'));
+    }
+
+    public function storeStudent(Request $request)
+    {
+        $request->validate([
+            'nisn' => 'required|unique:students,nisn',
+            'name' => 'required|string|max:255',
+            'kelas' => 'required|string|max:50',
+        ]);
+
+        Student::create([
+            'nisn' => $request->nisn,
+            'name' => $request->name,
+            'kelas' => $request->kelas,
+        ]);
+
+        return back()->with('success', 'Siswa berhasil ditambahkan!');
+    }
+
+    public function updateStudent(Request $request, $id)
+    {
+        $student = Student::findOrFail($id);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'kelas' => 'required|string|max:50',
+        ]);
+
+        $student->update([
+            'name' => $request->name,
+            'kelas' => $request->kelas,
+        ]);
+
+        // If student has a registered user, also update user's name & kelas
+        if ($student->is_registered) {
+            User::where('student_id', $student->id)->update([
+                'name' => $request->name,
+                'kelas' => $request->kelas,
+            ]);
+        }
+
+        return back()->with('success', 'Data siswa berhasil diupdate!');
+    }
+
+    public function destroyStudent($id)
+    {
+        $student = Student::findOrFail($id);
+
+        if ($student->is_registered) {
+            return back()->with('error', 'Siswa ini sudah memiliki akun. Hapus akun user-nya terlebih dahulu.');
+        }
+
+        $student->delete();
+        return back()->with('success', 'Data siswa berhasil dihapus.');
+    }
+
+    // ===================== MONTHLY CHAMPIONS =====================
+
+    public function champions()
+    {
+        $champions = MonthlyChampion::with('user')->orderByDesc('year')->orderByDesc('month')->get();
+
+        // Get users for the trigger form (top users of each month)
+        $currentMonth = now()->month;
+        $currentYear = now()->year;
+
+        return view('admin.champions', compact('champions', 'currentMonth', 'currentYear'));
+    }
+
+    public function triggerChampion(Request $request)
+    {
+        $month = $request->month ?? now()->month;
+        $year = $request->year ?? now()->year;
+
+        // Check if already exists
+        if (MonthlyChampion::where('month', $month)->where('year', $year)->exists()) {
+            return back()->with('error', 'Champion untuk bulan ini sudah ada.');
+        }
+
+        // Find top user of that month
+        $topUser = \App\Models\UserPoint::where('month', $month)
+            ->where('year', $year)
+            ->orderByDesc('points')
+            ->first();
+
+        if (!$topUser || $topUser->points <= 0) {
+            return back()->with('error', 'Tidak ada user dengan poin di bulan tersebut.');
+        }
+
+        MonthlyChampion::create([
+            'user_id' => $topUser->user_id,
+            'month' => $month,
+            'year' => $year,
+            'points' => $topUser->points,
+        ]);
+
+        $monthName = \Carbon\Carbon::createFromDate($year, $month, 1)->translatedFormat('F Y');
+        return back()->with('success', "🏆 Champion {$monthName} berhasil di-generate!");
+    }
+
+    public function updateChampionReward(Request $request, $id)
+    {
+        $champion = MonthlyChampion::with('user')->findOrFail($id);
+        $wasPaid = $champion->reward_status === 'paid';
+
+        $champion->update([
+            'reward_amount' => $request->reward_amount ? preg_replace('/[^0-9]/', '', $request->reward_amount) : null,
+            'reward_status' => $request->reward_status ?? $champion->reward_status,
+            'paid_at' => $request->reward_status === 'paid' ? now() : $champion->paid_at,
+            'notes' => $request->notes ?? $champion->notes,
+        ]);
+
+        // Auto-send notification when reward is marked as paid
+        if (!$wasPaid && $request->reward_status === 'paid' && $champion->user) {
+            $monthName = \Carbon\Carbon::createFromDate($champion->year, $champion->month, 1)->translatedFormat('F Y');
+            $amount = $champion->reward_amount ? 'Rp ' . number_format($champion->reward_amount, 0, ',', '.') : '';
+
+            Message::create([
+                'sender_id' => auth()->id(),
+                'receiver_id' => $champion->user->id,
+                'message' => "💸 Hadiah Champion {$monthName} sebesar {$amount} telah dikirim! Silakan cek e-wallet kamu. Terima kasih telah aktif di I FOUND! 🎉",
+                'is_read' => false
+            ]);
+        }
+
+        return back()->with('success', 'Data champion berhasil diupdate.' . (!$wasPaid && $request->reward_status === 'paid' ? ' Notifikasi pembayaran telah dikirim.' : ''));
+    }
+
+    public function giveReward($id)
+    {
+        $champion = MonthlyChampion::with('user')->findOrFail($id);
+        $user = $champion->user;
+
+        if (!$user) {
+            return back()->with('error', 'User tidak ditemukan.');
+        }
+
+        $monthName = \Carbon\Carbon::createFromDate($champion->year, $champion->month, 1)->translatedFormat('F Y');
+        $rewardAmount = $champion->reward_amount ? 'Rp ' . number_format($champion->reward_amount, 0, ',', '.') : 'Belum ditentukan';
+
+        // Build congratulations message
+        $msg = "🎉🏆 SELAMAT! Kamu adalah CHAMPION bulan {$monthName}!\n\n";
+        $msg .= "📊 Poin: {$champion->points} pts\n";
+        $msg .= "💰 Hadiah: {$rewardAmount}\n\n";
+
+        if ($champion->reward_amount && $user->ewallet_type && $user->ewallet_number) {
+            $msg .= "Hadiah akan dikirim ke {$user->ewallet_type} kamu ({$user->ewallet_number}).\n";
+            $msg .= "Silakan tunggu proses transfer dari admin.";
+        } elseif ($champion->reward_amount) {
+            $msg .= "⚠️ Kamu belum mengisi info e-wallet di profile. Silakan update profile kamu dengan nomor e-wallet (Dana/GoPay/OVO/ShopeePay) agar hadiah bisa dikirim.";
+        } else {
+            $msg .= "Admin akan segera menentukan jumlah hadiah kamu. Stay tuned! 🚀";
+        }
+
+        Message::create([
+            'sender_id' => auth()->id(),
+            'receiver_id' => $user->id,
+            'message' => $msg,
+            'is_read' => false
+        ]);
+
+        return back()->with('success', "🎉 Pesan selamat telah dikirim ke {$user->name}!");
     }
 }
+

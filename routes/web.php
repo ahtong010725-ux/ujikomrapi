@@ -18,6 +18,9 @@ Route::get('/home', function () {
 })->middleware(['auth', 'verified'])->name('home');
 
 
+// ===================== NISN CHECK API =====================
+Route::get('/api/check-nisn/{nisn}', [AuthController::class, 'checkNisn']);
+
 // ===================== LOST ITEMS =====================
 
 Route::get('/lost', [LostController::class, 'index']);
@@ -66,6 +69,7 @@ Route::get('/leaderboard', [RewardController::class, 'leaderboard'])->name('lead
 
 Route::middleware('auth')->group(function () {
     Route::post('/claim/{type}/{id}', [RewardController::class, 'claimItem'])->name('claim.item');
+    Route::post('/report-user/{id}', [RewardController::class, 'reportUser'])->name('report.user');
 });
 
 // ===================== ADMIN =====================
@@ -82,6 +86,27 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
     Route::get('/admin/claims', [AdminController::class, 'claims'])->name('admin.claims');
     Route::post('/admin/claims/{id}/approve', [AdminController::class, 'approveClaim'])->name('admin.claims.approve');
     Route::post('/admin/claims/{id}/reject', [AdminController::class, 'rejectClaim'])->name('admin.claims.reject');
+
+    // User reports
+    Route::get('/admin/reports', [AdminController::class, 'reports'])->name('admin.reports');
+    Route::post('/admin/reports/{id}/resolve', [AdminController::class, 'resolveReport'])->name('admin.reports.resolve');
+    Route::post('/admin/reports/{id}/ban', [AdminController::class, 'banFromReport'])->name('admin.reports.ban');
+
+    // Ban management
+    Route::post('/admin/users/{id}/ban', [AdminController::class, 'banUser'])->name('admin.users.ban');
+    Route::post('/admin/users/{id}/unban', [AdminController::class, 'unbanUser'])->name('admin.users.unban');
+
+    // Student management
+    Route::get('/admin/students', [AdminController::class, 'students'])->name('admin.students');
+    Route::post('/admin/students', [AdminController::class, 'storeStudent'])->name('admin.students.store');
+    Route::put('/admin/students/{id}', [AdminController::class, 'updateStudent'])->name('admin.students.update');
+    Route::delete('/admin/students/{id}', [AdminController::class, 'destroyStudent'])->name('admin.students.destroy');
+
+    // Monthly champions
+    Route::get('/admin/champions', [AdminController::class, 'champions'])->name('admin.champions');
+    Route::post('/admin/champions/trigger', [AdminController::class, 'triggerChampion'])->name('admin.champions.trigger');
+    Route::post('/admin/champions/{id}/update', [AdminController::class, 'updateChampionReward'])->name('admin.champions.update');
+    Route::post('/admin/champions/{id}/give-reward', [AdminController::class, 'giveReward'])->name('admin.champions.giveReward');
 });
 
 

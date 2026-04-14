@@ -93,6 +93,22 @@
                     </select>
                 </div>
 
+                <div class="input-group">
+                    <label>E-Wallet</label>
+                    <select name="ewallet_type">
+                        <option value="">-- Pilih E-Wallet --</option>
+                        <option value="Dana" {{ Auth::user()->ewallet_type == 'Dana' ? 'selected' : '' }}>Dana</option>
+                        <option value="GoPay" {{ Auth::user()->ewallet_type == 'GoPay' ? 'selected' : '' }}>GoPay</option>
+                        <option value="OVO" {{ Auth::user()->ewallet_type == 'OVO' ? 'selected' : '' }}>OVO</option>
+                        <option value="ShopeePay" {{ Auth::user()->ewallet_type == 'ShopeePay' ? 'selected' : '' }}>ShopeePay</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Nomor E-Wallet</label>
+                    <input type="text" name="ewallet_number" value="{{ Auth::user()->ewallet_number }}" placeholder="08xxxxxxxxxx">
+                </div>
+
             </div>
 
             <div class="profile-actions">
@@ -111,12 +127,8 @@
             </div>
         </form>
 
-        @if(session('success'))
-            <div class="alert-success">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                {{ session('success') }}
-            </div>
-        @endif
+
+
 
         <div class="danger-zone">
             <h3>

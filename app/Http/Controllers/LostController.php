@@ -36,6 +36,11 @@ class LostController extends Controller
 
     public function store(Request $request)
     {
+        // Soft ban check
+        if (auth()->user()->isSoftBanned()) {
+            return back()->with('error', '⚠️ Akun kamu sedang di-soft ban. Kamu tidak bisa membuat laporan. Alasan: ' . (auth()->user()->ban_reason ?? 'Tidak ada alasan.'));
+        }
+
         $request->validate([
             'brand_name' => 'nullable',
             'item_name' => 'required',
@@ -139,7 +144,7 @@ class LostController extends Controller
 
         $item->delete();
 
-        return redirect('/lost');
+        return redirect('/lost')->with('success', 'Item berhasil dihapus.');
     }
 
     public function updateStatus($id)
@@ -199,6 +204,11 @@ class LostController extends Controller
 
     public function sendMessage(Request $request, $userId)
     {
+        // Soft ban check
+        if (auth()->user()->isSoftBanned()) {
+            return response()->json(['error' => 'Akun kamu sedang di-soft ban. Kamu tidak bisa mengirim pesan.'], 403);
+        }
+
         $request->validate([
             'message' => 'nullable|required_without:image',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:5120'
@@ -302,20 +312,26 @@ class LostController extends Controller
     public function inbox(Request $request)
     {
         $loginId = auth()->id();
+        $isAdmin = auth()->user()->role === 'admin';
 
-        $chatUserIds = Message::where('sender_id', $loginId)
-            ->orWhere('receiver_id', $loginId)
-            ->get()
-            ->flatMap(function($msg) use ($loginId){
-                return $msg->sender_id == $loginId
-                    ? [$msg->receiver_id]
-                    : [$msg->sender_id];
-            })
-            ->unique();
+        if ($isAdmin) {
+            // Admin sees ALL users
+            $allIds = User::where('id', '!=', $loginId)->pluck('id');
+        } else {
+            $chatUserIds = Message::where('sender_id', $loginId)
+                ->orWhere('receiver_id', $loginId)
+                ->get()
+                ->flatMap(function($msg) use ($loginId){
+                    return $msg->sender_id == $loginId
+                        ? [$msg->receiver_id]
+                        : [$msg->sender_id];
+                })
+                ->unique();
 
-        // Always include admin users even without messages
-        $adminIds = User::where('role', 'admin')->pluck('id');
-        $allIds = $chatUserIds->merge($adminIds)->unique()->filter(fn($id) => $id != $loginId);
+            // Always include admin users even without messages
+            $adminIds = User::where('role', 'admin')->pluck('id');
+            $allIds = $chatUserIds->merge($adminIds)->unique()->filter(fn($id) => $id != $loginId);
+        }
 
         $users = User::whereIn('id', $allIds)
             ->get()
@@ -357,20 +373,24 @@ class LostController extends Controller
     public function fetchInbox(Request $request)
     {
         $loginId = auth()->id();
+        $isAdmin = auth()->user()->role === 'admin';
 
-        $chatUserIds = Message::where('sender_id', $loginId)
-            ->orWhere('receiver_id', $loginId)
-            ->get()
-            ->flatMap(function($msg) use ($loginId){
-                return $msg->sender_id == $loginId
-                    ? [$msg->receiver_id]
-                    : [$msg->sender_id];
-            })
-            ->unique();
+        if ($isAdmin) {
+            $allIds = User::where('id', '!=', $loginId)->pluck('id');
+        } else {
+            $chatUserIds = Message::where('sender_id', $loginId)
+                ->orWhere('receiver_id', $loginId)
+                ->get()
+                ->flatMap(function($msg) use ($loginId){
+                    return $msg->sender_id == $loginId
+                        ? [$msg->receiver_id]
+                        : [$msg->sender_id];
+                })
+                ->unique();
 
-        // Always include admin users even without messages
-        $adminIds = User::where('role', 'admin')->pluck('id');
-        $allIds = $chatUserIds->merge($adminIds)->unique()->filter(fn($id) => $id != $loginId);
+            $adminIds = User::where('role', 'admin')->pluck('id');
+            $allIds = $chatUserIds->merge($adminIds)->unique()->filter(fn($id) => $id != $loginId);
+        }
 
         $users = User::whereIn('id', $allIds)
             ->get()

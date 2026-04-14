@@ -110,6 +110,10 @@
             Chat
         </a>
 
+        <button type="button" class="contact-btn" style="background-color: #e53935; color: white; font-size: 11px;" onclick="showReportUserModal({{ $item->user_id }}, '{{ addslashes($item->user->name ?? 'User') }}')">
+            🚩 Laporkan
+        </button>
+
     @endif
 
 @endif
@@ -219,6 +223,30 @@
         </div>
     </div>
 
+    <!-- Report User Modal -->
+    @auth
+    <div id="reportUserModal" class="report-modal-overlay" style="display:none;">
+        <div class="report-modal-box">
+            <div class="report-modal-header">
+                <h3>🚩 Laporkan Pengguna</h3>
+                <button type="button" class="report-modal-close" onclick="hideReportUserModal()">&times;</button>
+            </div>
+            <p style="color:#666; font-size:13px; margin-bottom:16px;">Laporkan pengguna <strong id="reportUserName"></strong> jika melakukan pelanggaran.</p>
+            <form id="reportUserForm" method="POST">
+                @csrf
+                <div class="modal-form-row">
+                    <label>Alasan Pelaporan</label>
+                    <textarea name="reason" placeholder="Jelaskan alasan kamu melaporkan pengguna ini..." required></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="modal-submit-btn">Kirim Laporan</button>
+                    <button type="button" class="modal-cancel-btn" onclick="hideReportUserModal()">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endauth
+
     <!-- FOOTER -->
     <footer>
         <div>
@@ -286,6 +314,7 @@
         .then(data => {
             closeReportModal();
             refreshItemList();
+            showToast('Report berhasil dikirim!', 'success');
         })
         .catch(err => {
             if (err.errors) {
@@ -295,6 +324,7 @@
                 errDiv.textContent = err.message || 'Terjadi kesalahan. Coba lagi.';
             }
             errDiv.style.display = 'block';
+            showToast(err.message || 'Gagal mengirim report', 'error');
         })
         .finally(() => {
             btn.disabled = false;
@@ -356,6 +386,7 @@
         .then(data => {
             closeEditModal();
             refreshItemList();
+            showToast('Data berhasil diupdate!', 'success');
         })
         .catch(err => {
             if (err.errors) {
@@ -365,6 +396,7 @@
                 errDiv.textContent = err.message || 'Terjadi kesalahan. Coba lagi.';
             }
             errDiv.style.display = 'block';
+            showToast(err.message || 'Gagal mengupdate data', 'error');
         })
         .finally(() => {
             btn.disabled = false;
@@ -471,6 +503,19 @@
                 }
             });
     };
+
+    // ==================== REPORT USER ====================
+    function showReportUserModal(userId, userName) {
+        document.getElementById('reportUserModal').style.display = 'flex';
+        document.getElementById('reportUserName').textContent = userName;
+        document.getElementById('reportUserForm').action = '/report-user/' + userId;
+    }
+    function hideReportUserModal() {
+        document.getElementById('reportUserModal').style.display = 'none';
+    }
+    document.getElementById('reportUserModal')?.addEventListener('click', function(e) {
+        if (e.target === this) hideReportUserModal();
+    });
     </script>
 
     </body>

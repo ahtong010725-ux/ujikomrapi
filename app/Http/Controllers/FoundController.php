@@ -147,7 +147,7 @@ class FoundController extends Controller
 
         $item->delete();
 
-        return redirect('/found');
+        return redirect('/found')->with('success', 'Item berhasil dihapus.');
     }
 
     public function updateStatus($id)
