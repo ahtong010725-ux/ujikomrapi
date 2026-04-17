@@ -223,6 +223,32 @@ body.dark-theme .lb-row:hover { background: rgba(129,140,248,0.04); }
 body.dark-theme .lb-user-info strong { color: #eee; }
 body.dark-theme .lb-header h1 { background: linear-gradient(135deg, #818cf8, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 body.dark-theme .lb-table-header { background: linear-gradient(135deg, #12121a, #1e1e30); }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .lb-container {
+        padding: 20px 16px;
+    }
+    .lb-header h1 {
+        font-size: 28px;
+    }
+    .badge-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .lb-row {
+        padding: 12px 16px;
+        gap: 12px;
+    }
+    .lb-points {
+        font-size: 16px;
+    }
+    .lb-user-info strong {
+        font-size: 13px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+}
 </style>
 </head>
 <body>

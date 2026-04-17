@@ -192,11 +192,46 @@
 
         /* Responsive */
         @media (max-width: 768px) {
-            .sidebar { width: 100%; height: auto; position: relative; flex-direction: row; flex-wrap: wrap; padding: 16px; gap: 6px; }
-            .sidebar-top { width: 100%; margin-bottom: 10px; }
-            .sidebar a { padding: 8px 12px; font-size: 13px; margin: 0; }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                flex-direction: row;
+                flex-wrap: wrap;
+                padding: 12px;
+                gap: 4px;
+                overflow-x: auto;
+            }
+            .sidebar-top { width: 100%; margin-bottom: 8px; }
+            .sidebar a { padding: 8px 10px; font-size: 12px; margin: 0; white-space: nowrap; }
             .sidebar-bottom { margin-top: 0; }
-            .main-content { margin-left: 0; padding: 20px; }
+            .main-content { margin-left: 0; padding: 16px; }
+
+            h1 { font-size: 20px !important; }
+
+            .card { padding: 16px; border-radius: 12px; }
+
+            table { font-size: 12px; }
+            th, td { padding: 10px 8px; font-size: 11px; }
+
+            .btn-approve, .btn-reject, .btn-danger {
+                padding: 6px 10px;
+                font-size: 11px;
+            }
+
+            /* Stack claim action buttons on mobile */
+            td div[style*="display: flex"] {
+                flex-direction: column !important;
+                gap: 6px !important;
+            }
+
+            td form[style*="display:flex"] {
+                flex-direction: column !important;
+            }
+
+            td input[placeholder="Alasan..."] {
+                width: 100% !important;
+            }
         }
     </style>
 </head>

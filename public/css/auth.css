@@ -368,12 +368,49 @@ body.dark-theme .auth-alert-error {
 
 /* ================= RESPONSIVE ================= */
 @media (max-width: 480px) {
+    .auth-container {
+        padding: 16px;
+    }
+
     .auth-card {
-        padding: 32px 24px;
+        padding: 28px 20px;
         border-radius: 20px;
+        max-height: 95vh;
     }
 
     .title {
         font-size: 24px;
+        margin-bottom: 4px;
+    }
+    
+    .subtitle {
+        font-size: 13px;
+        margin-bottom: 24px;
+    }
+
+    .input-group {
+        margin-bottom: 14px;
+    }
+
+    .input-group label {
+        font-size: 11px;
+    }
+
+    .input-group input,
+    .input-group select {
+        padding: 12px 14px;
+        font-size: 13px;
+        border-radius: 10px;
+    }
+
+    .btn-auth {
+        padding: 12px;
+        font-size: 14px;
+        border-radius: 10px;
+    }
+    
+    .switch-text {
+        font-size: 13px;
+        margin-top: 18px;
     }
 }
